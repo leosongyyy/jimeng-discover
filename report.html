@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>即梦 · 发现精选 TOP 100</title>
+<style>
+  :root {
+    --bg: #0f0f13; --card: #17171f; --border: #2a2a38;
+    --accent: #7c5af0; --accent2: #e040fb;
+    --text: #e8e8f0; --muted: #888899;
+    --gold: #ffd700;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+          background: var(--bg); color: var(--text); min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1a0a2e 0%, #12122a 50%, #0a1a2e 100%);
+             padding: 48px 40px 36px; text-align: center;
+             border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+  .header::before { content: ""; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(124,90,240,.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 50%, rgba(224,64,251,.1) 0%, transparent 60%);
+    pointer-events: none; }
+  .header h1 { font-size: 2.4rem; font-weight: 700;
+    background: linear-gradient(90deg, #a78bfa, #e040fb, #60a5fa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; letter-spacing: 2px; margin-bottom: 8px; }
+  .header .subtitle { color: var(--muted); font-size: .95rem; letter-spacing: 1px; }
+  .stats-bar { display: flex; gap: 16px; justify-content: center;
+                padding: 24px 40px; flex-wrap: wrap; }
+  .stat-card { background: var(--card); border: 1px solid var(--border);
+                border-radius: 12px; padding: 16px 28px; text-align: center; min-width: 140px; }
+  .stat-card .val { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+  .stat-card .lbl { font-size: .78rem; color: var(--muted); margin-top: 4px; letter-spacing: .5px; }
+  .table-wrap { padding: 0 24px 60px; overflow-x: auto; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0 6px; min-width: 900px; }
+  thead tr { background: linear-gradient(90deg, #1e1040, #1a1a3a, #0e1e30); }
+  thead th { padding: 14px 16px; text-align: left; font-size: .8rem; font-weight: 600;
+              color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+              border-bottom: 2px solid var(--accent); white-space: nowrap; }
+  thead th:first-child { border-radius: 8px 0 0 8px; }
+  thead th:last-child  { border-radius: 0 8px 8px 0; }
+  tbody tr { background: var(--card); transition: background .18s, transform .18s; }
+  tbody tr:hover { background: #1e1e2e; transform: translateY(-1px); }
+  td { padding: 14px 16px; vertical-align: middle;
+        border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); font-size: .88rem; }
+  td:first-child { border-left: 1px solid var(--border); border-radius: 8px 0 0 8px; }
+  td:last-child  { border-right: 1px solid var(--border); border-radius: 0 8px 8px 0; }
+  .rank { font-size: .85rem; font-weight: 700; color: var(--muted); width: 44px; text-align: center; }
+  tr:nth-child(1) .rank { color: var(--gold); font-size: 1rem; }
+  tr:nth-child(2) .rank { color: #c0c0d0; font-size: .95rem; }
+  tr:nth-child(3) .rank { color: #cd7f32; font-size: .9rem; }
+  .img-cell { width: 130px; min-width: 100px; padding: 10px 12px; }
+  .img-cell img { width: 110px; height: 110px; object-fit: cover; border-radius: 10px;
+                   display: block; border: 1px solid var(--border); transition: transform .2s, box-shadow .2s; }
+  .img-cell img:hover { transform: scale(1.06); box-shadow: 0 8px 24px rgba(124,90,240,.4); }
+  .no-img { width: 110px; height: 110px; background: #1c1c2e; border-radius: 10px;
+             display: flex; align-items: center; justify-content: center;
+             color: var(--muted); font-size: .75rem; border: 1px dashed var(--border); }
+  .prompt-cell { max-width: 340px; }
+  .prompt-text { font-size: .82rem; color: #ccc; line-height: 1.65;
+                  display: -webkit-box; -webkit-line-clamp: 6;
+                  -webkit-box-orient: vertical; overflow: hidden; cursor: default; }
+  .prompt-text:hover { -webkit-line-clamp: unset; overflow: visible; }
+  .model-badge { display: inline-block; background: linear-gradient(135deg, #2d1a5a, #1a2d5a);
+                  border: 1px solid #4a3a8a; color: #b0a0f0; font-size: .76rem;
+                  padding: 4px 10px; border-radius: 20px; white-space: nowrap; letter-spacing: .3px; }
+  .date-cell  { color: var(--muted); font-size: .8rem; white-space: nowrap; }
+  .author-cell { font-weight: 500; font-size: .85rem; color: #d0d0e8; max-width: 120px; }
+  .usage-cell { color: var(--muted); font-size: .82rem; text-align: right; }
+  .fav-num { font-weight: 700; font-size: .9rem; white-space: nowrap; }
+  .fav-gold   { color: var(--gold); }
+  .fav-silver { color: #a0c0ff; }
+  .fav-normal { color: #e040fb; }
+  .work-link { display: inline-block; padding: 5px 14px; border-radius: 20px;
+                background: linear-gradient(135deg, var(--accent), var(--accent2));
+                color: #fff; text-decoration: none; font-size: .78rem; font-weight: 600;
+                transition: opacity .18s, transform .18s; white-space: nowrap; }
+  .work-link:hover { opacity: .85; transform: scale(1.05); }
+  .new-badge { display: inline-block; margin-left: 6px; padding: 2px 7px;
+                background: linear-gradient(135deg, #ff6b35, #f7c59f);
+                color: #fff; font-size: .68rem; font-weight: 700;
+                border-radius: 10px; letter-spacing: .5px; vertical-align: middle; }
+  .footer { text-align: center; padding: 28px; color: var(--muted);
+             font-size: .8rem; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>即梦 · 发现精选 TOP 100</h1>
+  <div class="subtitle">2026 年热门 AI 创作作品 · 新作品置顶 · 数据更新于 2026-03-17 09:04</div>
+</div>
+<div class="stats-bar">
+  <div class="stat-card"><div class="val">100</div><div class="lbl">展示作品数</div></div>
+  <div class="stat-card"><div class="val">743</div><div class="lbl">累计收集总量</div></div>
+  <div class="stat-card"><div class="val">4,418</div><div class="lbl">最高收藏量</div></div>
+  <div class="stat-card"><div class="val">378</div><div class="lbl">最低（TOP 100）</div></div>
+  <div class="stat-card"><div class="val">690</div><div class="lbl">平均收藏量</div></div>
+</div>
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>排名</th><th>预览图</th><th>提示词</th><th>使用模型</th>
+      <th>发布时间</th><th>作者</th><th>收藏量</th><th>使用次数</th><th>链接</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="rank">#1</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7600386047981194547" target="_blank"><img src="images/001_7600386047981194547.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">丹凤朝阳|来亿点丝滑一镜到底的敦煌美学</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-01-28 20:19</td>
+      <td class="author-cell">懂AI的初久</td>
+      <td><span class="fav-num fav-gold">❤ 4,418</span></td>
+      <td class="usage-cell">0</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7600386047981194547" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#2</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7591491521510149402" target="_blank"><img src="images/002_7591491521510149402.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">连笔花体艺术字设计，核心文字繁体“心夢”，横笔画 0.6mm、竖笔画 1.8mm，笔画纤细挺拔，字间连笔顺滑无断点，撇捺延长带柔美卷曲装饰；副标题「XINAI2026」小号花体字，紧贴主字底部居中；粉色烫印金属质感，反光柔和不刺眼；白色背景，logo 整体对称均衡，矢量格式输出，适合文创产品应用</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-01-04 21:04</td>
+      <td class="author-cell">XIN.AI</td>
+      <td><span class="fav-num fav-gold">❤ 2,011</span></td>
+      <td class="usage-cell">432</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7591491521510149402" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#3</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611855841888718090" target="_blank"><img src="images/003_7611855841888718090.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">超高清真人电影角色设定集 (Professional Live-action Character Design Sheet)。基于参考图中的人物特征，创作一套用于大银幕制作的工业级视觉参考图。整体画风锁定为写实摄影风格，严格禁止任何二次元或动漫化的笔触，追求 8K 电影工业级的细节保真度。
+1. 三视图转台 (Standard Turnaround Sheet)
+视角规格： 包含角色的正面 (Front)、侧面 (Profile) 及背面 (Back) 三个维度的全身站姿视图。
+视觉对齐： 所有角度的比例必须严格一致，确保角色身高、五官位置、服装褶皱在不同视角下完美契合。
+背景设定： 纯净的工业灰色或中性色背景，带有细微的物理阴影以增加立体感。
+2. 表情模组 
+情绪矩阵： 展示角色在写实光影下的六种基本情绪状态：喜悦 、悲伤 、愤怒 、惊讶 、恐惧  以及自然中性 。
+面部写实： 重点捕捉面部肌肉的物理联动，如真实的额头纹路、眼周挤压及唇部的动态变化，保留皮肤质感与毛孔细节。
+3. 动态姿态 
+典型动作： 描绘角色在电影场景中的典型物理动态，包括：奔跑 、跳跃 、开怀大笑 以及掩面哭泣 。
+重力与动力学： 强调服装面料在运动中的物理垂坠感与肌肉受力状态，呈现出真实的抓拍快门感。
+[角色属性与质感约束]
+身份一致性： 严格复刻参考图人物的面部特征、肤色、发质及体型。
+禁止画风： 严禁出现赛璐璐风格、夸张的动漫比例或平涂色块。
+光影质量： 采用中性全局照明 (Neutral Global Illumination)，确保所有角度的色彩与细节清晰可见，方便 3D 建模师参考。
+[执行指令与输出规格]
+构图： 干净整洁的多面板布局 (Clean multi-panel layout)。
+画质： 超高分辨率，RAW 摄影质感，8K UHD。</div></td>
+      <td><span class="model-badge">high_aes_general_v41</span></td>
+      <td class="date-cell">2026-02-28 18:08</td>
+      <td class="author-cell">青岛深发源贸易</td>
+      <td><span class="fav-num fav-gold">❤ 1,778</span></td>
+      <td class="usage-cell">2,502</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611855841888718090" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#4</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592499171194572059" target="_blank"><img src="images/004_7592499171194572059.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">最强扫地僧</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-01-07 14:14</td>
+      <td class="author-cell">AI-绘画师</td>
+      <td><span class="fav-num fav-gold">❤ 1,714</span></td>
+      <td class="usage-cell">0</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592499171194572059" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#5</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7599681513424260361" target="_blank"><img src="images/005_7599681513424260361.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-01-26 22:46</td>
+      <td class="author-cell">绍军</td>
+      <td><span class="fav-num fav-gold">❤ 1,575</span></td>
+      <td class="usage-cell">48,581</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7599681513424260361" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#6</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592205535395450138" target="_blank"><img src="images/006_7592205535395450138.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">#中国好创意大赛#暴雪肆虐的城市中，一条酒红色围巾被狂风裹挟，历经撞灯杆、缠枝桠的惊险漂泊。它冲破混沌风雪，冲向摇摇欲坠的红薯小摊，恰在摊主遭遇摊位险情时飘落。摊主紧抓围巾围上，这份意外暖意驱散了风雪的凛冽与奔波的疲惫。</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-01-06 19:15</td>
+      <td class="author-cell">上海宝寅影业</td>
+      <td><span class="fav-num fav-gold">❤ 1,552</span></td>
+      <td class="usage-cell">0</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592205535395450138" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#7</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7593284648747224366" target="_blank"><img src="images/007_7593284648747224366.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">马年主题新年海报，红色背景，马的形态由流动的光线与抽象曲线构成，不出现写实动物细节，整体画面强调速度、方向与力量感，现代国潮风格，具有强烈的前进与突破象征。</div></td>
+      <td><span class="model-badge">high_aes_general_v41</span></td>
+      <td class="date-cell">2026-01-09 17:02</td>
+      <td class="author-cell">阿雄</td>
+      <td><span class="fav-num fav-gold">❤ 1,527</span></td>
+      <td class="usage-cell">4,976</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7593284648747224366" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#8</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590842035377130779" target="_blank"><img src="images/008_7590842035377130779.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">花体艺术字设计，致敬小林章精致风格，高级配色（墨黑+鎏金），磨砂金属肌理，美好四字“星河入梦”，小字“Xing He Ru Meng”，流畅连笔+横细竖粗，字间笔画缠绕连接，撇捺延长带星光装饰，鎏金烫印质感，纯色背景，高级感拉满</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-01-03 03:05</td>
+      <td class="author-cell">XIN.AI</td>
+      <td><span class="fav-num fav-gold">❤ 1,509</span></td>
+      <td class="usage-cell">353</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590842035377130779" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#9</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7591803922461838602" target="_blank"><img src="images/009_7591803922461838602.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">M stand Q版门店，M standLogo标识，银灰色渐变色调，活力黑色少量点缀，透明反光玻璃质感，两层，充满幻想力和休闲感，高级设计，跨界感，UI设计风格，光线追踪，干净背景，参考Pinterest、Dribbble 风格，使用OC渲染器，细节丰富，良好的空间感和层次感，整体时尚活力，充分体现品牌的调性，16K高清，浅色背景，大面积留白。</div></td>
+      <td><span class="model-badge">即梦4.0</span></td>
+      <td class="date-cell">2026-01-05 17:16</td>
+      <td class="author-cell">用户6184108063377</td>
+      <td><span class="fav-num fav-gold">❤ 1,448</span></td>
+      <td class="usage-cell">49</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7591803922461838602" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#10</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610985989728750857" target="_blank"><img src="images/010_7610985989728750857.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-26 09:53</td>
+      <td class="author-cell">wx15k</td>
+      <td><span class="fav-num fav-gold">❤ 1,236</span></td>
+      <td class="usage-cell">10,552</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610985989728750857" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#11</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590303683254947098" target="_blank"><img src="images/011_7590303683254947098.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">信纸，纸的底色是红色，信纸的边缘是新春国潮元素的精致烫金画，马年新春，Cosmotech风格，大师级排版，极繁主义，结合插画写实，充满幻想力和感染力，精致的烟花和新年元素。极繁主义，这是一幅融合压纹烫金工艺。细腻，高清晰度，精细设计，叠影浮凸渗透，完美构图，图案真实。整个画面只有金色红色，无其他颜色。</div></td>
+      <td><span class="model-badge">即梦4.0</span></td>
+      <td class="date-cell">2026-01-01 16:15</td>
+      <td class="author-cell">Ragni</td>
+      <td><span class="fav-num fav-gold">❤ 1,219</span></td>
+      <td class="usage-cell">4,259</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590303683254947098" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#12</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7594029418817883401" target="_blank"><img src="images/012_7594029418817883401.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">矢量字体设计，采用纤细曲线与不规则线条的组合，“寻幽”二字笔画轻盈灵动（0.8mm），借鉴鸟虫篆的婉转形态，弱化棱角，增添飘逸感。白底黑字简洁通透，纯白色背景，主题字居中横排单行排布，占画面四分之一空间，画面右下方以极细无衬线字体标注小英文 XINAI DESIGN。</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-01-11 17:12</td>
+      <td class="author-cell">XIN.AI</td>
+      <td><span class="fav-num fav-gold">❤ 1,108</span></td>
+      <td class="usage-cell">1,797</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7594029418817883401" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#13</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590052823115599142" target="_blank"><img src="images/013_7590052823115599142.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">春夏秋冬，
+
+
+
+
+Moebius (Jean Giraud)风格，极繁主义，神秘感，大师构图构图，细节完美，获奖作品</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-01-01 00:02</td>
+      <td class="author-cell">L艺术家养成记</td>
+      <td><span class="fav-num fav-gold">❤ 1,057</span></td>
+      <td class="usage-cell">105</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590052823115599142" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#14</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7606575466866036019" target="_blank"><img src="images/014_7606575466866036019.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">基于波提切利的《春》油画重新想象。纯色葱绿色背景，构图居中，上下左右大量留白。画面中，一群人体比例夸张的人物以清晰线条勾勒，头部极小，四肢被拉长扭曲，形成荒诞的舞蹈姿态。人物穿着高饱和湛蓝与橙红色块的极简服装，点缀着扭曲放大的花朵，象征春日生机。背景极简平面，无阴影渲染，色彩冲击力强，营造复古未来主义波普风格。叙事充满宿命感与故事性，仿佛在扭曲认知中演绎一场荒诞的春日仪式。画面左上角用极细的黑色无衬线字体标注“MIQIAI.26”，右上角用极细的黑色手写艺术英文字体标注“Dreamina.AI”。</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-02-14 12:38</td>
+      <td class="author-cell">米奇</td>
+      <td><span class="fav-num fav-gold">❤ 1,048</span></td>
+      <td class="usage-cell">2,581</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7606575466866036019" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#15</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610612539445005577" target="_blank"><img src="images/015_7610612539445005577.jpg" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">[视频作品]</div></td>
+      <td><span class="model-badge">即梦视频</span></td>
+      <td class="date-cell">2026-02-25 09:43</td>
+      <td class="author-cell">用户96167972310</td>
+      <td><span class="fav-num fav-silver">❤ 924</span></td>
+      <td class="usage-cell">16,285</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610612539445005577" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#16</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610064993014304051" target="_blank"><img src="images/016_7610064993014304051.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">Seedance 2.0全能参考，上传参考、输入文字，创意无限可能</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-23 22:19</td>
+      <td class="author-cell">笑临</td>
+      <td><span class="fav-num fav-silver">❤ 903</span></td>
+      <td class="usage-cell">827</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610064993014304051" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#17</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610781512132300082" target="_blank"><img src="images/017_7610781512132300082.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">5秒钟，茅坑变厕所</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-25 20:39</td>
+      <td class="author-cell">Lazyeey</td>
+      <td><span class="fav-num fav-silver">❤ 902</span></td>
+      <td class="usage-cell">489</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610781512132300082" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#18</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7612462537749138714" target="_blank"><img src="images/018_7612462537749138714.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">sujunmin风格摄影，8K超精细人像摄影，伦勃朗光结合暗夜朦光，营造斑驳弥散、迷离抽象的斑驳光影。色彩：完美配色，高反差，基调暗朦/泛朦。
+
+
+sujunmin以仰拍视角，白杨树干自下而上直插云霄，眼睛纹理分明，似岁月镌刻。树叶茂密葱茏，在青绿色天空映衬下轮廓分明，阳光穿透，叶片脉络若隐若现，光影斑驳洒下。树枝相互交错，构成不规则几何图形。画面底部是湿润土地与散落树叶，与上方白杨树呼应，营造出深邃、清幽且富有生机的视觉效果，展现杨树林的挺拔与坚韧。树丛中背着行李戴着斗笠走着的和尚与施主抱拳，天空几只白鸽飞翔。光影对比，明暗冲突，层次分明。天空背景一段随机英文金句文案描述点缀。sjm倾斜构图，仰视透过蕨类植物拍摄，情绪写意，专业。</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-03-02 09:22</td>
+      <td class="author-cell">李登</td>
+      <td><span class="fav-num fav-silver">❤ 884</span></td>
+      <td class="usage-cell">523</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7612462537749138714" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#19</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7613707941048225050" target="_blank"><img src="images/019_7613707941048225050.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">字体标志“焕醒春日  自然启程”，创意字体设计，线条流畅且富有艺术感，将字体进行抽象变形，创造出独特的节奏和动感，给人以强烈的视觉冲击。加入叶子、喇叭、花朵等装饰点缀元素，白色加黄绿色点缀，高级感，黑色背景，</div></td>
+      <td><span class="model-badge">high_aes_general_v41</span></td>
+      <td class="date-cell">2026-03-05 17:55</td>
+      <td class="author-cell">喵喵大魔王</td>
+      <td><span class="fav-num fav-silver">❤ 850</span></td>
+      <td class="usage-cell">167</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7613707941048225050" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#20</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592864640699338030" target="_blank"><img src="images/020_7592864640699338030.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">画面风格为简约文艺的手写字体风，背景为黄昏日落，营造深邃静谧氛围。主体文字 “深处落雨的黄昏” 以流畅自然的手写笔触呈现，字体灵动飘逸，笔画粗细有致，具艺术感与参考图字体风格一致。英文 “Good night” 在中文下方，同样用随性的手写字体书写，与中文相互呼应。整体画面简洁干净，突出文字传达的浪漫意蕴</div></td>
+      <td><span class="model-badge">high_aes_general_v41</span></td>
+      <td class="date-cell">2026-01-08 13:52</td>
+      <td class="author-cell">三石</td>
+      <td><span class="fav-num fav-silver">❤ 817</span></td>
+      <td class="usage-cell">77</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592864640699338030" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#21</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611178677686029619" target="_blank"><img src="images/021_7611178677686029619.jpg" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">汪小敏在聚光灯下深情演唱，清冷又深情，气质优雅迷人，眼神温柔而有故事感，嗓音细腻动人，情绪深沉内敛，自带寂寞氛围感，一开口便治愈所有孤独。舞台暗调光影，一束追光打在身上，发丝发光，氛围感拉满。4K超高清画质，极致清晰，细节锐利，电影级质感，光影高级，画面稳定丝滑，无闪烁无模糊，完美展现舞台魅力与歌手气场，沉静、深情、极具穿透力，直击人心。</div></td>
+      <td><span class="model-badge">high_aes_general_v50</span></td>
+      <td class="date-cell">2026-02-26 22:20</td>
+      <td class="author-cell">刘先知</td>
+      <td><span class="fav-num fav-silver">❤ 810</span></td>
+      <td class="usage-cell">23,902</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611178677686029619" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#22</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7606649785688280329" target="_blank"><img src="images/022_7606649785688280329.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">极简平面设计，纯白背景，人被液体困，分形复杂图案，故事感+宿命感，大张力角度，梦境感，Vaporwave，超现实主义，荧光发光，对比度加强，冲击感，多出不合理的梦境感，视觉残像，运动模糊，视觉震撼，层次感，负片效果，色彩对比强烈，画面呈现出一种诡异而超现实的美感，超清晰左上角有极细无衬线字体“BENTHAM.26”，右上角有极细无衬线字体“Dreamina.AI”。</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-02-14 17:26</td>
+      <td class="author-cell">Bentham</td>
+      <td><span class="fav-num fav-silver">❤ 797</span></td>
+      <td class="usage-cell">122</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7606649785688280329" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#23</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590453744400223498" target="_blank"><img src="images/023_7590453744400223498.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">一幅黑色的艺术字作品,画面竖排内容是“赤马红羊”艺术字体,笔画极粗非常厚实饱满,笔画大体走势是黑体字（横平竖直),笔画非常粗,粗笔画之间相互堆叠交织缠绕,相互融合的形成紧密的夸张块面感,在抽象化处理下,整体看上去更像是云在滚动,厚重流畅的曲线,所有笔画都采用极为宽阔的粗体块状,流动感强,笔画转折处圆润,线条呈现出 卷曲,波浪状,带有刀锋般的锐利收尾,整体风格类似涂鸦风格,字体有肌理感，金色，既有现代抽象的装饰性又有力度,黑色底，字体充满背景，大师级排版，盖着红色的印章盖“九紫离火”篆体在文字周围，增加小字英文“chima hongyang”装饰在周围。16:9高清满屏</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-01-02 01:57</td>
+      <td class="author-cell">折枝侠</td>
+      <td><span class="fav-num fav-silver">❤ 796</span></td>
+      <td class="usage-cell">116</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590453744400223498" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#24</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7591523239445204234" target="_blank"><img src="images/024_7591523239445204234.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">天蓝色的背景如被水洗过般澄澈，初升的太阳是饱满的朱红色，像一枚刚被点燃的玉璧悬在半空。一株树以简约的线条勾勒其间，枝干呈墨黑色，虬曲着向上伸展，恰好以疏朗的枝桠将太阳轻轻“托”住，红色的光与黑色的枝影交叠，像一幅浓淡相宜的水墨画。
+ 
+树与太阳的倒影在下方铺展，从浅蓝渐变为深蓝，如同水面晕开的墨色，倒影中的枝桠与实景对称，却因磨砂颗粒感显得朦胧，添了几分虚实相生的意境。红色太阳的倒影泛着柔和的光晕，与实景的炽烈形成呼应，黑红两色在蓝底上碰撞，既对比鲜明又透着东方美学的内敛。
+ 
+构图极简，画面被横向分割为天地与倒影，树的位置偏左，太阳居于右上，留白处让视线有了呼吸的空间。16k的高清画质让每一处颗粒都清晰却不杂乱，磨砂质感像蒙了层薄纱，将热烈的红、沉静的黑、清透的蓝揉成一首无声的诗，高级感与意境在光影交错中自然流淌，堪称凝练东方韵味的杰作。</div></td>
+      <td><span class="model-badge">high_aes_general_v41</span></td>
+      <td class="date-cell">2026-01-04 23:07</td>
+      <td class="author-cell">开心麻溜——路过留痕关注，感谢各位梦友</td>
+      <td><span class="fav-num fav-silver">❤ 793</span></td>
+      <td class="usage-cell">1,943</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7591523239445204234" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#25</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590840176008564018" target="_blank"><img src="images/025_7590840176008564018.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">流畅连笔花体艺术字，横细竖粗+笔画纤细，诗意四字“梦逐花踪”，小字“Meng Zhu Hua Zong”，字间笔画连接、撇捺延长带装饰感，粉色调+烫印质感，优雅时尚，纯色背景，logo设计</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-01-03 02:57</td>
+      <td class="author-cell">XIN.AI</td>
+      <td><span class="fav-num fav-silver">❤ 739</span></td>
+      <td class="usage-cell">124</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590840176008564018" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#26</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7591328538788138286" target="_blank"><img src="images/026_7591328538788138286.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">插画，满画幅，优雅的欧式繁花，复古主义风格。花朵搭配错落有致，极繁以自然色系为主线条，勾线清晰，高饱和色，极繁主义，华丽，丰富的细节。鲜明的劳瑞尔·布里克设计风格，大朵大朵的耧斗菜，水仙花。绣球，栀子花，玫瑰花，大丽菊。，虞美人，百合。勿忘我。，紫薇花，薰衣草等，无花果</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-01-04 10:31</td>
+      <td class="author-cell">河畔琴声</td>
+      <td><span class="fav-num fav-silver">❤ 715</span></td>
+      <td class="usage-cell">117</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7591328538788138286" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#27</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7600423982411631899" target="_blank"><img src="images/027_7600423982411631899.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">一群疯孩子，水彩，厚重色彩，简约，复古，颜值拉满，超级简约，手绘图，水彩插画作品，极致细节，英文，美漫风格</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-01-28 22:47</td>
+      <td class="author-cell">所以</td>
+      <td><span class="fav-num fav-silver">❤ 711</span></td>
+      <td class="usage-cell">703</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7600423982411631899" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#28</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7604737372755954954" target="_blank"><img src="images/028_7604737372755954954.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-09 13:45</td>
+      <td class="author-cell">用户3697290317775</td>
+      <td><span class="fav-num fav-silver">❤ 689</span></td>
+      <td class="usage-cell">4,455</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7604737372755954954" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#29</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590590843770211594" target="_blank"><img src="images/029_7590590843770211594.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">主体为现代艺术手写创意字体 “敬颂冬绥 顺颂新祺”；字体笔画融合柔美曲线与锐利直线，曲线飘逸延伸，直线挺拔利落；字形呈横向舒展且略带动态倾斜的布局，字间笔画相互呼应、富有视觉流动感；笔画粗细对比细腻（主笔稳重、辅笔纤细轻盈），线条边缘光滑自然；下方搭配纤细无衬线字体 “Happy New Year”；整体营造 浪漫细腻、心动时的轻盈艺术 氛围，突出字体的曲线韵律、动态布局与中英文风格融合的效果。</div></td>
+      <td><span class="model-badge">high_aes_general_v41</span></td>
+      <td class="date-cell">2026-01-02 10:49</td>
+      <td class="author-cell">芹菜炒又</td>
+      <td><span class="fav-num fav-silver">❤ 673</span></td>
+      <td class="usage-cell">218</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590590843770211594" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#30</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610619056491646258" target="_blank"><img src="images/030_7610619056491646258.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">“设计‘春日手信’四个汉字 + 英文‘SPRING SOUVENIRS’的艺术字体，定位为治愈清新风格的标识：首先构建基础款，采用优雅柔美的花体字形，笔画融入卷曲线条与花瓣装饰，以纯白色填充、黑背景衬托，突出 “春日手信” 的温柔氛围感；在此基础上生成特效款，将字体升级为青绿渐变的柔光质感（笔画边缘叠加通透光晕，添加花瓣点缀），强化 “春日寄信” 的治愈清新氛围。”</div></td>
+      <td><span class="model-badge">high_aes_general_v41</span></td>
+      <td class="date-cell">2026-02-25 10:08</td>
+      <td class="author-cell">目小录</td>
+      <td><span class="fav-num fav-silver">❤ 672</span></td>
+      <td class="usage-cell">120</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610619056491646258" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#31</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7613206233000054043" target="_blank"><img src="images/031_7613206233000054043.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-03-04 09:28</td>
+      <td class="author-cell">世事无常</td>
+      <td><span class="fav-num fav-silver">❤ 663</span></td>
+      <td class="usage-cell">2,339</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7613206233000054043" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#32</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7606872417071336714" target="_blank"><img src="images/032_7606872417071336714.jpg" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">明年的收入取决于今天打的字</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-15 07:50</td>
+      <td class="author-cell">惠姐</td>
+      <td><span class="fav-num fav-silver">❤ 651</span></td>
+      <td class="usage-cell">16,603</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7606872417071336714" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#33</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7593186895144799515" target="_blank"><img src="images/033_7593186895144799515.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">一架小小的红色的单翼螺旋桨飞机穿行在布满积云的天空，浅白灰色调的云朵被夕阳镀上金色的边，天空从上方的深蓝色向下方的橙色渐变。在庞大的云朵间，飞机显得十分渺小。Moebius (Jean Giraud)风格，极繁主义，极致表现力，浪漫感，细节完美，大师杰作。</div></td>
+      <td><span class="model-badge">high_aes_general_v41</span></td>
+      <td class="date-cell">2026-01-09 10:43</td>
+      <td class="author-cell">Musesc</td>
+      <td><span class="fav-num fav-silver">❤ 623</span></td>
+      <td class="usage-cell">100</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7593186895144799515" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#34</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7609540230206573851" target="_blank"><img src="images/034_7609540230206573851.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">彩色版画风格，手绘速写质感，线条粗糙有颗粒感，像印在米白色纸上的旧插画；画面主体是一个圆润苹果，三只只黑白花小猫围着苹果转圈，，表情呆萌；苹果边缘有断点线条链接星星，整体风格复古童趣，无复杂细节，保留手绘的随性和质朴感。红苹果</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-02-22 12:22</td>
+      <td class="author-cell">妖妖铃铛</td>
+      <td><span class="fav-num fav-silver">❤ 606</span></td>
+      <td class="usage-cell">171</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7609540230206573851" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#35</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592834139770998067" target="_blank"><img src="images/035_7592834139770998067.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">颜料的涂抹感，丙烯插画，耀变，反射，小动物，梦幻感，白加黄加粉加绿唯美，童趣，艺术抽象，，</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-01-08 11:54</td>
+      <td class="author-cell">叫我seven</td>
+      <td><span class="fav-num fav-silver">❤ 593</span></td>
+      <td class="usage-cell">460</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592834139770998067" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#36</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7614722964449135881" target="_blank"><img src="images/036_7614722964449135881.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">主体为 “花海果酒” 广告创意，以花海与花丛形成果酒瓶轮廓的负空间，内部展现花海景观（各色鲜花、蜜蜂、花田、远处花丘）；画面风格是超现实合成的写实摄影风，风格参考花海酒类广告设计；场景设定为绚烂的花海世界，光线从酒瓶轮廓顶部洒入，营造通透感；构图视角为平视角度，采用中心对称构图；画面排版是品牌信息（“FLOWER FRUIT WINE”“FLOWER” 字样、蝴蝶标志）置于酒瓶轮廓中心，底部有 “Fresh flower essence” 标语；细节补充包括花卉的丰富层次（不同种类的鲜花、花茎、花叶）、花丛的繁茂质感、光线的明暗对比（轮廓外的深粉与轮廓内的明亮花彩），整体呈现花海与产品融合的超现实广告风格。</div></td>
+      <td><span class="model-badge">high_aes_general_v50</span></td>
+      <td class="date-cell">2026-03-08 11:34</td>
+      <td class="author-cell">Q3Q2025_JM</td>
+      <td><span class="fav-num fav-silver">❤ 586</span></td>
+      <td class="usage-cell">186</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7614722964449135881" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#37</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7609216730669337865" target="_blank"><img src="images/037_7609216730669337865.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">厚涂风格，3D，微景观，厚涂，厚薄不同塑造立体感，俯视图，居中斜笔一抹不规则的厚厚的草绿色闪光颜料，上面（可爱的蝴蝶仙子提着小花篮飞翔，春天花园景观和小动物），极简俯视图，画面底部写着纤细艺术字“Spring is coming”，*大面积留白*，白色纸张纹理背景。</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-02-21 15:27</td>
+      <td class="author-cell">悦彩人生</td>
+      <td><span class="fav-num fav-silver">❤ 586</span></td>
+      <td class="usage-cell">184</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7609216730669337865" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#38</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7613172858402966810" target="_blank"><img src="images/038_7613172858402966810.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-03-04 07:19</td>
+      <td class="author-cell">秦山岛</td>
+      <td><span class="fav-num fav-silver">❤ 583</span></td>
+      <td class="usage-cell">3,206</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7613172858402966810" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#39</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7595465662865083694" target="_blank"><img src="images/039_7595465662865083694.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-01-15 14:06</td>
+      <td class="author-cell">孙哥</td>
+      <td><span class="fav-num fav-silver">❤ 583</span></td>
+      <td class="usage-cell">18,126</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7595465662865083694" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#40</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7594134016513576243" target="_blank"><img src="images/040_7594134016513576243.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">台上是千古悲欢，台下是万般孤寂。
+借一副皮囊，演尽他人的一生；燃一身傲骨，换得片刻的绚烂。
+这一场繁华大梦，醒来时，唯有明月与浊酒相伴。</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-01-11 23:58</td>
+      <td class="author-cell">绛辰REDSTAR</td>
+      <td><span class="fav-num fav-silver">❤ 582</span></td>
+      <td class="usage-cell">0</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7594134016513576243" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#41</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611167474867899675" target="_blank"><img src="images/041_7611167474867899675.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-26 21:37</td>
+      <td class="author-cell">瑶姚美食</td>
+      <td><span class="fav-num fav-silver">❤ 579</span></td>
+      <td class="usage-cell">3,045</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611167474867899675" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#42</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7609609995390307622" target="_blank"><img src="images/042_7609609995390307622.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-22 16:53</td>
+      <td class="author-cell">Stellar Whisper</td>
+      <td><span class="fav-num fav-silver">❤ 573</span></td>
+      <td class="usage-cell">256</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7609609995390307622" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#43</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7599588095306108186" target="_blank"><img src="images/043_7599588095306108186.jpg" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">1、一位身着暗红色衣服的六七岁女童（女侠风格），圆嘟嘟的脸蛋，眼睛炯炯有神，衣服纹理清晰，搭配有装饰的护臂。小女孩的头发高高地束于脑后，头顶有精致发饰，
+部分头发丝散落。女童一只手指向镜头前方，目光坚定地看向镜头正前方，后背背着一把收入剑鞘的宝剑，剑鞘装饰古朴而且精致。身后是一匹骏马，背景是河岸浅滩，远处有群山，
+营造出一种冷峻、神秘并且充满了江湖气息的氛围。尽显其潇洒不羁、英气逼人的女侠风范。比例9:16</div></td>
+      <td><span class="model-badge">high_aes_general_v41</span></td>
+      <td class="date-cell">2026-01-26 16:43</td>
+      <td class="author-cell">用户9130650156029</td>
+      <td><span class="fav-num fav-silver">❤ 563</span></td>
+      <td class="usage-cell">14,597</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7599588095306108186" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#44</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7609993664953158939" target="_blank"><img src="images/044_7609993664953158939.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">春夏秋冬四季的极繁主义插画，极繁主义风格，精美绘本插画，温馨，华丽氛围</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-02-23 17:42</td>
+      <td class="author-cell">波波师兄</td>
+      <td><span class="fav-num fav-silver">❤ 553</span></td>
+      <td class="usage-cell">235</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7609993664953158939" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#45</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610607522445135142" target="_blank"><img src="images/045_7610607522445135142.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">平面插画，海报设计，高级感排版，新中式美学，中国当代艺术风格，新中式宋代主题，国风美学，高饱和渐变背景，超现实，从太湖石中长出许多花卉，细长枝叶，花朵有明显的大小变化，周围有一些蝴蝶围绕，旁边还停留一只麻雀，背景中间有宋代窗花样式，画面右上方有些树枝与花朵插入到画面内，渐变和肌理磨砂处理，造型柔和,中式建筑，中式花纹，不透明和半透明质感，蓝白渐变色，工笔画，层次感，弥散渐变，细节满满,左上方放标题“ChineseA esthetics”，用细的衬线体，放大处理，在标题下放“中式美学”，下方还有“源自东方的传统与继承”，整个画面左下方放日期“4.10”和“4.16”，还有“2025”，日期部分有点缀小字“Oriental aes thetics blooming in the world”，日期与点缀小字都用衬线体，底部左下角有“QuandanAIR”，极小号字体，横向排布;底端左侧“Apr 10-Apr 16,2025”，极小号字体，横向排布</div></td>
+      <td><span class="model-badge">high_aes_general_v50</span></td>
+      <td class="date-cell">2026-02-25 09:24</td>
+      <td class="author-cell">Rittsu鼠栗子</td>
+      <td><span class="fav-num fav-silver">❤ 546</span></td>
+      <td class="usage-cell">21</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610607522445135142" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#46</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611201333160463667" target="_blank"><img src="images/046_7611201333160463667.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">我想用g梦画出萌娃和萌宠在一起玩的图片场景是胖胖的小萌娃和一只大橘猫在一起躲在被窝下面看手机，小萌娃手里拿着手机帮我吩咐该提示词准确，画面细腻温馨自悦，我要写实风格，背景大，人物小，做贴纸用的</div></td>
+      <td><span class="model-badge">high_aes_general_v50</span></td>
+      <td class="date-cell">2026-02-26 23:49</td>
+      <td class="author-cell">李清宇</td>
+      <td><span class="fav-num fav-silver">❤ 540</span></td>
+      <td class="usage-cell">6,263</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611201333160463667" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#47</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7597828310554381614" target="_blank"><img src="images/047_7597828310554381614.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">超现实主义插画，背景是极简风格的水平彩虹细线。画面中心是一个液体飞溅状的疯狂人轮廓，形态扭曲，充满流动感。强烈的动态角度和视觉张力，造成视觉错觉。画面采用柔光、虚化和色散效果，氛围神秘。轮廓有珠光和反光，质感细腻。左上方文字“BENTHAM.26”，右上方文字“Dreamina.AI”，均为极细无衬线字体。</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-01-21 22:54</td>
+      <td class="author-cell">Bentham</td>
+      <td><span class="fav-num fav-silver">❤ 535</span></td>
+      <td class="usage-cell">14</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7597828310554381614" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#48</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7612031726268812570" target="_blank"><img src="images/048_7612031726268812570.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">未来可期</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-03-01 05:32</td>
+      <td class="author-cell">幸福老兵</td>
+      <td><span class="fav-num fav-silver">❤ 534</span></td>
+      <td class="usage-cell">1,307</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7612031726268812570" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#49</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610311138449820978" target="_blank"><img src="images/049_7610311138449820978.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">瑞士国际主义平面设计，Noël Leu风格。画面中心是极简理性几何 创意笔画 变体字“即刻 造梦”二行，笔画由流畅的圆形与平滑的曲线组合而成，风格统一。画面上方，极细无衬线字体依次排列“2026”、“Design”、“YOZE”。左下角标注“YOZE - DESIGN”，右下角标注“成就梦想.无限创造”。整体遵循严格的网格系统构图，水平与垂直轴线规整对齐。背景为浅灰色，文字为黑色，呈现哑光艺术纸肌理，边缘裁切锐利规整。</div></td>
+      <td><span class="model-badge">high_aes_general_v42</span></td>
+      <td class="date-cell">2026-02-24 14:14</td>
+      <td class="author-cell">【即梦】生万物</td>
+      <td><span class="fav-num fav-silver">❤ 531</span></td>
+      <td class="usage-cell">108</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610311138449820978" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#50</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611001467880656137" target="_blank"><img src="images/050_7611001467880656137.jpg" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">合唱歌曲【苍穹唤】</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-26 10:52</td>
+      <td class="author-cell">星空女神【原创作品】</td>
+      <td><span class="fav-num fav-silver">❤ 531</span></td>
+      <td class="usage-cell">4,088</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611001467880656137" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#51</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611026676855606566" target="_blank"><img src="images/051_7611026676855606566.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">Seedance 2.0全能参考，上传参考、输入文字，创意无限可能</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-26 12:31</td>
+      <td class="author-cell">🙏美人🙏</td>
+      <td><span class="fav-num fav-silver">❤ 518</span></td>
+      <td class="usage-cell">4,010</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611026676855606566" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#52</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7598752368326446346" target="_blank"><img src="images/052_7598752368326446346.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">LOGO设计，字体标志，创意字体设计，篆书复古复刻文字 “滿”，字体抽象，篆书，文字排版艺术，结合复古图章、徽章排版形式，艺术构图，致的清晰度，极简主义，简约，禅意，高级，杰作，大师作品。小英文VISION。</div></td>
+      <td><span class="model-badge">high_aes_general_v41</span></td>
+      <td class="date-cell">2026-01-24 10:40</td>
+      <td class="author-cell">VISION</td>
+      <td><span class="fav-num fav-silver">❤ 502</span></td>
+      <td class="usage-cell">468</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7598752368326446346" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#53</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592951095480044826" target="_blank"><img src="images/053_7592951095480044826.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">一组9个独特的3D卡通PFP头像合集，九宫格布局，可爱有趣的潮玩角色设计，玩具般的粘土质感，光滑的表面，富有表现力的面孔，带有太阳镜、帽子等各种配饰，工作室灯光，色彩鲜艳，干净的黑色背景。</div></td>
+      <td><span class="model-badge">即梦4.0</span></td>
+      <td class="date-cell">2026-01-08 19:28</td>
+      <td class="author-cell">听说山那边</td>
+      <td><span class="fav-num fav-normal">❤ 499</span></td>
+      <td class="usage-cell">363</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592951095480044826" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#54</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7608527426326465818" target="_blank"><img src="images/054_7608527426326465818.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">Seedance 2.0全能参考，上传参考、输入文字，创意无限可能</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-19 18:52</td>
+      <td class="author-cell">680168</td>
+      <td><span class="fav-num fav-normal">❤ 489</span></td>
+      <td class="usage-cell">12,224</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7608527426326465818" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#55</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7609999202076151090" target="_blank"><img src="images/055_7609999202076151090.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">Seedance 2.0全能参考，上传参考、输入文字，创意无限可能</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-23 18:03</td>
+      <td class="author-cell">如果～(手机特效)</td>
+      <td><span class="fav-num fav-normal">❤ 481</span></td>
+      <td class="usage-cell">8,477</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7609999202076151090" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#56</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7599324416312495410" target="_blank"><img src="images/056_7599324416312495410.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">高级CG，美少女，厚涂，全身像，精致刻画，流畅的线条，神秘感，近距离，高清，8K，动态视角，禁欲系，皮草，复古装饰，银饰，金属额饰，碎发随风摆动，复古发饰，超长流苏，很多细碎辫子，人物POS特写，精致刻画，流畅的线条，神秘感，深邃感，极繁风格，发丝细腻富有光泽，近距离肖像画，狭长凤眼，绝美眼睛，瓷白如玉的肌肤，肌肤纹理，面部光影，笔触，线条清晰，高级感，清冷，五官精致，，精致感，高质量，柔焦，细节刻画，超高清，32K，大师级光影，明暗对比，杰出。人物正面，人物写真，华灯初上背景，航拍视角，厚涂，艺术氛围感加强，人物特写，动态视角，繁复纱质感服饰，华丽繁复的饰品，强调发型，透视感强烈，细节丰富，伦勃朗光，明暗对比强烈。强调人物轮廓，整体呈现梦幻感与电影风碰撞的美感。采用动态角度，画面以暗冷色调为基调，东方风格服饰闪粉光点，朦胧且梦幻的感觉。3D渲染 身材极好。</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-01-25 23:40</td>
+      <td class="author-cell">郑一个梦</td>
+      <td><span class="fav-num fav-normal">❤ 481</span></td>
+      <td class="usage-cell">13</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7599324416312495410" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#57</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7601046681039195443" target="_blank"><img src="images/057_7601046681039195443.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">AI短剧-人物对话场景测试</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-01-30 15:03</td>
+      <td class="author-cell">Captain</td>
+      <td><span class="fav-num fav-normal">❤ 478</span></td>
+      <td class="usage-cell">0</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7601046681039195443" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#58</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610372007410093322" target="_blank"><img src="images/058_7610372007410093322.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">梦幻艺术风实验海报，竖版平视居中满版构图；主体为被满版液态扭曲玻璃后的的几朵花卉（类似百合 / 玫瑰，为暖黄色），竖条纹玻璃折射效果，花卉的背景在浅蓝色的天空，主营造朦胧梦幻氛围；文案排版：顶部为白色纤细无衬线英文 “VISUAL”“CONCEPT”“DESIGN”，中央为白色衬线字体 “浮弦之境 烬染蚀梦” 及下方英文 “Dream of artistic conception”，再下方为白色小字说明与版权声明，左侧标注 “(意境)”、右侧标注 “(梦幻)”，底部为品牌标识 “Atwo” 及版权信息 “rednote ID: Atwo15541978305”；</div></td>
+      <td><span class="model-badge">high_aes_general_v42</span></td>
+      <td class="date-cell">2026-02-24 18:10</td>
+      <td class="author-cell">吸水浴巾Design</td>
+      <td><span class="fav-num fav-normal">❤ 471</span></td>
+      <td class="usage-cell">67</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610372007410093322" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#59</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7606544254948740402" target="_blank"><img src="images/059_7606544254948740402.jpg" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">[视频作品]</div></td>
+      <td><span class="model-badge">即梦视频</span></td>
+      <td class="date-cell">2026-02-14 10:36</td>
+      <td class="author-cell">廿四桥闲人</td>
+      <td><span class="fav-num fav-normal">❤ 467</span></td>
+      <td class="usage-cell">4,057</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7606544254948740402" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#60</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7609717216182865179" target="_blank"><img src="images/060_7609717216182865179.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-22 23:49</td>
+      <td class="author-cell">初心</td>
+      <td><span class="fav-num fav-normal">❤ 465</span></td>
+      <td class="usage-cell">359</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7609717216182865179" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#61</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592110098613292334" target="_blank"><img src="images/061_7592110098613292334.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">这些极繁主义的矢量图展现出独特的艺术魅力，它们以复杂的设计风格传达出丰富的情感。通过复杂的线条、形状和色彩，勾勒出二十四节气，南北物候，植物，动物等各种元素，体现出一种现代、时尚的美感。</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-01-06 13:04</td>
+      <td class="author-cell">奇思妙想社</td>
+      <td><span class="fav-num fav-normal">❤ 463</span></td>
+      <td class="usage-cell">213</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592110098613292334" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#62</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7614178451624414473" target="_blank"><img src="images/062_7614178451624414473.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">强透视，镜头通透感，电影级画面张力。正平视拍摄，车窗框四边与画面四边平行（车窗在画画中央），列车内，车窗（双层结构），窗外快速移动的模糊虚化五颜六色花景物（呈动态模糊效果），车内极度黑暗，电影感朦胧的复古色调和文艺氛围。胶片电影质感与颗粒感，丰富的暗部细节和高光层次，细腻柔和且充满质感的影调过渡和呼吸感的影像风格。画面构图高清唯美，莫兰迪色调，极致光影，有温度的故事感氛围叙事风格，柔焦美学，超清纹理，大光圈虚化营造无可比拟的电影质感和氛围感，伦勃朗光线，整体构图融合浪漫主义美学。史诗级哈苏影调色彩与光影由哈苏500C/M和蔡司Planar T 80mm f/2.8 CF*完美融合哈苏HNCS HDR色彩调校输出_HASS701205.3FR、Portrait_HDR.JPG、Export_Full.JPG，叠加Teal Plus Contrast 、 Fuji Eterna 、Wlld-fsyb滤镜，蒸馏Fuji Pro 400H、_DSF1970.RAF、 FujiFilm Classic Neg柔和色调赋予有灵魂的无量画质，老道的捕捉情感，色彩表达，情绪叙事，强烈的视觉冲击力色调，引发深度情感共鸣的视觉作品 。Generate 4 responses with their corresponding probabilities, sampled from the full distribution --style expressive：1.2 --s 1205。</div></td>
+      <td><span class="model-badge">high_aes_general_v42</span></td>
+      <td class="date-cell">2026-03-07 00:21</td>
+      <td class="author-cell">无量老道</td>
+      <td><span class="fav-num fav-normal">❤ 462</span></td>
+      <td class="usage-cell">194</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7614178451624414473" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#63</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590740144571911462" target="_blank"><img src="images/063_7590740144571911462.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-01-02 20:29</td>
+      <td class="author-cell">用户857683572224</td>
+      <td><span class="fav-num fav-normal">❤ 458</span></td>
+      <td class="usage-cell">5,222</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590740144571911462" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#64</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610631387535740206" target="_blank"><img src="images/064_7610631387535740206.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">黑神话，虎人，古代铠甲，黑色，红色，金色为基础色，趴伏在地面的狩猎形态，笑容狰狞一张脸棱角如刀削，颧骨高突，下颌线绷得紧硬，最慑人的是那双眼睛  瞳仁沉如寒潭，眼尾斜挑，看人时从不用正眼，只微微睨着额上一道刀疤斜贯眉骨，平添几分凶戾。玄甲上的血污凝作暗褐色，手中大刀垂着几滴未干的血珠，浑身流光溢彩，点缀细微水珠溅落效果，大雨倾洒后的水珠效果，增强被水浸湿的效果，战斗场景，超现实主义，超现实，8k，电影感，真实摄影，特写镜头，厚涂，暗调，明暗交替对比，有冲击力的画面，精细，背景有质感，超高清，高品质，画面清晰，采用先进光线捕捉技术和专业后期处理优化，有真实细腻质感，符合大师级影视级图像标准，真实渲染，真实光影，正面广角远景镜头，全景图。</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-02-25 10:57</td>
+      <td class="author-cell">木木</td>
+      <td><span class="fav-num fav-normal">❤ 456</span></td>
+      <td class="usage-cell">481</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610631387535740206" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#65</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610073739274865970" target="_blank"><img src="images/065_7610073739274865970.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">以写实风格呈现一片繁茂的海棠花林，屋顶，猫咪伸懒腰，阳光透过枝叶的缝隙洒下，形成斑驳的光影，粉色的桃花挂满枝头，微风拂过，花朵轻轻摇曳，散发着阵阵清香，展现出如梦如幻的氛围在微风轻拂的春日里，日式动漫风格，新海诚画风，光影细腻，色彩明亮饱和，3d高细节插画，32K分辨率，电影感构图 —— 画面宁静治愈，充满生活气息</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-02-23 22:52</td>
+      <td class="author-cell">Qo</td>
+      <td><span class="fav-num fav-normal">❤ 451</span></td>
+      <td class="usage-cell">155</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610073739274865970" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#66</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7597414603957619994" target="_blank"><img src="images/066_7597414603957619994.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">非写实风格，梦幻主义，在一片宁静的水面上，一位个戴着斗笠的男孩，划着小船穿过由翠绿荷叶构成的旋转隧道。荷叶的纹理清晰，随着水流轻轻摇曳，形成一种梦幻般的视觉效果。整个场景被柔和而朦胧的光线所笼罩，营造出一种神秘而宁静的氛围。从下往上的视角，使得荷叶隧道更加引人注目，荷叶隧道形成旋涡视觉，引导观者的视线向中心的小船聚焦。画面高度概念感，撞色，怪诞美学，画面空灵梦幻，怪诞的感觉，大师级构图，杰作，8k。在奇幻的世界中飞速前行，周围弥漫着神秘的氛围忧郁，氛围感，宇宙漫游狂想曲，金色光晕，氛围感，狂草肆意，受光处自带闪粉橘黄金，暖光部分为自发光，发光处有强烈的辉光效果，明暗对比强烈，光影构思巧妙，Armin Hofmann风格，夸张抽象变形的东方神秘靓丽形象，32K壁纸，色彩叙事，现代抽象艺术，神话元素，超高清64K画质，大师级海报构图，虚幻引擎，潇洒的造型，突出极度舒适感，滑稽夸张，真实人像摄影，手写签名R6visual，极具东方韵味
+​</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-01-20 20:09</td>
+      <td class="author-cell">六锐视角</td>
+      <td><span class="fav-num fav-normal">❤ 449</span></td>
+      <td class="usage-cell">72</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7597414603957619994" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#67</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7597368615255510310" target="_blank"><img src="images/067_7597368615255510310.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">上下留白，左右留白，不要撑满整个画面，茶饮品牌营销海报，主体是喜茶饮纸杯（印喜茶图案logo + 绿色纹理+花、 无衬线体），搭配透明独特玻璃底座（高低两款，高独特弧线玻璃底座内有黄色桂花干、矮独特弧线玻璃底座放绿色茶点）、极细弯曲独特造型树干上挂带灯小竹编灯笼（灯笼下小标签“有囍”）；场景为新中式轻奢开工主题茶饮展示台；风格是新中式国潮轻奢茶饮，色调以绿色 + 浅米色为基底，搭配黄色点缀；采用平视偏微仰视角，纸杯居高中突，辅助元素旁侧点缀，背景为浅米色纯色；细节需体现纸杯、独特玻璃底座质感、茶点品牌标识、灯笼编制质感、整体氛围高端轻奢感。高清。</div></td>
+      <td><span class="model-badge">high_aes_general_v41</span></td>
+      <td class="date-cell">2026-01-20 17:10</td>
+      <td class="author-cell">i瞎闹腾</td>
+      <td><span class="fav-num fav-normal">❤ 449</span></td>
+      <td class="usage-cell">41</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7597368615255510310" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#68</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7614490861027560731" target="_blank"><img src="images/068_7614490861027560731.jpg" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">[视频作品]</div></td>
+      <td><span class="model-badge">即梦视频</span></td>
+      <td class="date-cell">2026-03-07 20:33</td>
+      <td class="author-cell">木易生香数字人唱歌</td>
+      <td><span class="fav-num fav-normal">❤ 444</span></td>
+      <td class="usage-cell">1,340</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7614490861027560731" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#69</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7614399353486118182" target="_blank"><img src="images/069_7614399353486118182.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-03-07 14:38</td>
+      <td class="author-cell">用户8249531568022</td>
+      <td><span class="fav-num fav-normal">❤ 442</span></td>
+      <td class="usage-cell">867</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7614399353486118182" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#70</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610775658695773449" target="_blank"><img src="images/070_7610775658695773449.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">在单行本上的潦草草稿，灵魂画手，通过简单的线条传递强烈的情感或识别度，风格看似抽象、粗糙或不像，却能意外捕捉到事物神韵和特点，形散神聚、充满喜感而引发调侃和共鸣，夸张或简化的笔触，将对象画得 神似 却 形不似 ，从而产生幽默效果，强调趣味性和情感表达</div></td>
+      <td><span class="model-badge">即梦4.0</span></td>
+      <td class="date-cell">2026-02-25 20:16</td>
+      <td class="author-cell">青红造了个白</td>
+      <td><span class="fav-num fav-normal">❤ 438</span></td>
+      <td class="usage-cell">36</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610775658695773449" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#71</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7591846688592121098" target="_blank"><img src="images/071_7591846688592121098.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">空山基插画风格，素色镜面不锈钢战斗光纹初号机，高度详细的数字cg，概念艺术，质感真实，尖锐设计，西方史诗，背景红色，背景干净，背景的光影效果营造出氛围，整体兼具艺术感，明暗对比强烈，高光反射，画面铺满高光点，镜头仰视拍摄，全身特写</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-01-05 20:02</td>
+      <td class="author-cell">H_g_IO_NC_I2</td>
+      <td><span class="fav-num fav-normal">❤ 437</span></td>
+      <td class="usage-cell">46</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7591846688592121098" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#72</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7599976835455225115" target="_blank"><img src="images/072_7599976835455225115.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">创作一张极简主义风格的艺术海报，核心视觉为西安地标建筑的插画，以细腻的线条和简洁的轮廓勾勒出电视塔、大雁塔、钟楼、西安奥体中心，汉城湖、等标志性建筑，背景为纯白色，营造出视觉效果，突出建筑的优雅与庄重。画面中充分借鉴詹姆斯·特瑞尔的光影幻境，以柔和的光线和渐变的色彩进行细腻的处理，使建筑在光影中若隐若现，仿佛悬浮于空中，营造出如梦似幻的仙境氛围。 整体风格结合了和田诚的平面艺术简约之美，板垣光子的现代艺术手法，并融入笹尾光彦的前卫设计理念，通过将中式古典美学与现代艺术灵感相结合，提升画面的艺术张力。4K，顶部中央标题“西安 | 印象”“Welcome to XI AN”极小字点缀，</div></td>
+      <td><span class="model-badge">high_aes_general_v41</span></td>
+      <td class="date-cell">2026-01-27 17:51</td>
+      <td class="author-cell">简语</td>
+      <td><span class="fav-num fav-normal">❤ 436</span></td>
+      <td class="usage-cell">38</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7599976835455225115" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#73</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611811306882010419" target="_blank"><img src="images/073_7611811306882010419.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">极简主义艺术海报，采用点绘艺术halftone技法，以密集细腻小点塑造画面，通过点的疏密、大小变化表现光影与明暗，复古未来主义风格，彩色方案，巨大的负空间，超干净，平静和舒缓的视觉效果。治愈配色，色彩冷暖对比强烈，强调梦幻温暖的氛围感，微光，隐约看出花香间的蜜蜂形态，非传统构图方式，动态模糊，由点绘技法构成。</div></td>
+      <td><span class="model-badge">即梦4.0</span></td>
+      <td class="date-cell">2026-02-28 15:15</td>
+      <td class="author-cell">绘彩惠色</td>
+      <td><span class="fav-num fav-normal">❤ 434</span></td>
+      <td class="usage-cell">67</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611811306882010419" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#74</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592040779309239602" target="_blank"><img src="images/074_7592040779309239602.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">现代艺术手写创意字体设计，紫粉渐变底色，画面中央现代艺术手写创意字体“策马迎春”，倾斜动态，飘逸优雅，颗粒质感，粗糙质感。笔画融合柔美曲线与锐利直线，曲线飘逸延伸如花瓣飞舞，直线挺拔利落似花枝招展，字形舒展动态倾斜，字间笔画相互呼应富有视觉流动感，笔画粗细对比细腻，线条边缘光滑自然，下方搭配纤细无衬线字体“FLOWER RIDE”，整体营造浪漫温馨、花开满园的艺术氛围。保留噪点颗粒、丝网印刷质感，点线面层次分布，大留白布局，极简主义，简约，高级，大师艺术，杰作</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-01-06 08:35</td>
+      <td class="author-cell">咔嚓咔嚓</td>
+      <td><span class="fav-num fav-normal">❤ 432</span></td>
+      <td class="usage-cell">97</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592040779309239602" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#75</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7615687561125661979" target="_blank"><img src="images/075_7615687561125661979.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-03-11 01:57<span class="new-badge">NEW</span></td>
+      <td class="author-cell">野生小浣熊</td>
+      <td><span class="fav-num fav-normal">❤ 431</span></td>
+      <td class="usage-cell">903</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7615687561125661979" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#76</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611457144461774090" target="_blank"><img src="images/076_7611457144461774090.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">武政谅卡通风格插画，丝网印刷风格，颗粒肌理，平视视角，画面上半部分是纯蓝色的天空，天空中有一朵巨大的白色云朵，下半部分是绿色的草地，天空和草地四六分布，在草地地平线上侧停放着一台大众房车，位置居于草地的画面正中央，纯扁平插画，颗粒纹理，平涂，超高清，8K，多巴胺色系，</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-02-27 16:21</td>
+      <td class="author-cell">从天而降的掌法</td>
+      <td><span class="fav-num fav-normal">❤ 429</span></td>
+      <td class="usage-cell">268</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611457144461774090" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#77</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592260512990235950" target="_blank"><img src="images/077_7592260512990235950.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">大师级排版，极繁主义，半调图案，杂色，丝网印刷质感。重叠边缘色彩渐变，同位色渐变色系，点线面层次分布。构建赛博朋克风海报场景：背景蓝色为主色调；主体是赤兔马头部巨大形象，戴数码太阳眼镜，头戴科幻耳机，主题周围有一些全息投影，画面布满多语言文字信息、巨型艺术化字母与细节元素，整体通过高对比色彩、文字与潮流视觉符号，头部营造出充满个性与未来感的赛博朋克氛围，突出科幻风格的融合冲击。出一种动态立体感效果的画面。C4d渲染。4K，</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-01-06 22:48</td>
+      <td class="author-cell">六力句</td>
+      <td><span class="fav-num fav-normal">❤ 428</span></td>
+      <td class="usage-cell">232</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592260512990235950" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#78</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7606694535296470282" target="_blank"><img src="images/078_7606694535296470282.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">富有美感的氛围，展现出时间的循环、矛盾与哲理。过去、现在与未来相交错，虚幻与无边的终点相融合，末端又是新的起点。画面中有被遗忘的神祇处于不存在的四维时间中，周围是崩塌的宇宙星河，有的正在消散、虚无。用沉郁系黑白红渲染，营造出神秘感，画面具有半透明流光琉璃质感，如同杰作一般，体现神性，史诗感，神秘，奇幻。一群人围着，超广角构图，张力十足，压迫感，细节生动完美。极其震撼的一幕，视觉冲击力强，明暗对比强烈，阴影过渡自然，电影级构图，视觉冲击，8K画质，超清，极致细节，清晰的线条，高对比，大师级别的作品。立体渲染，精细画笔，色彩搭配和谐融洽，超细腻笔触，线条流畅，超清画质，完美品质，高质量，自适应饱和度，专业级打光，大师杰作，自由视角，阴影过渡自然，氛围感，高级感，唯美，宿命感拉满，画面具有层次感。视觉冲击，故事感，高级感，动态感。</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-02-14 20:20</td>
+      <td class="author-cell">藍楓🍁（欢迎用图、点赞、关注， 哈哈）</td>
+      <td><span class="fav-num fav-normal">❤ 424</span></td>
+      <td class="usage-cell">65</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7606694535296470282" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#79</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7613630692483747122" target="_blank"><img src="images/079_7613630692483747122.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">Seedance 2.0全能参考，上传参考、输入文字，创意无限可能</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-03-05 12:55</td>
+      <td class="author-cell">诸羽猪呐！😘</td>
+      <td><span class="fav-num fav-normal">❤ 422</span></td>
+      <td class="usage-cell">334</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7613630692483747122" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#80</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590754205921463598" target="_blank"><img src="images/080_7590754205921463598.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">拼贴素材，下雨主题，平铺，knolling布局</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-01-02 21:23</td>
+      <td class="author-cell">夏岚</td>
+      <td><span class="fav-num fav-normal">❤ 421</span></td>
+      <td class="usage-cell">262</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7590754205921463598" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#81</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610314007177628955" target="_blank"><img src="images/081_7610314007177628955.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-24 14:25</td>
+      <td class="author-cell">仁.爱</td>
+      <td><span class="fav-num fav-normal">❤ 417</span></td>
+      <td class="usage-cell">1,558</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610314007177628955" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#82</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7606387185482337574" target="_blank"><img src="images/082_7606387185482337574.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">绘本风格，色彩浓郁艳丽。Isabelle Arsenault 风格的儿童图画书插图，春天，仰望天空，绿水红花，青翠的森林，生机勃勃，绿意盎然，水彩风插画，大师级构图，高清。</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-02-14 00:27</td>
+      <td class="author-cell">马德炒蛋</td>
+      <td><span class="fav-num fav-normal">❤ 415</span></td>
+      <td class="usage-cell">317</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7606387185482337574" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#83</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592637796582559014" target="_blank"><img src="images/083_7592637796582559014.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">高级排版海报，一个挣脱的渐变金棕色菩萨人脸形状，艺术，禅意，极简，朦胧意识流，留白，模糊感+颗粒感+肌理感，超现实主义美学，新中式风格，反射，折射，流体艺术形态，, 高级的氛围感，层次感，情景叙事,情绪写意，高级的氛围感，透明的清冷感，噪点，泛朦，主题字进行字体设计，极细宋体风格“无相之境”，文字进行错位穿插摆放，字体优雅细长，整体呈现东方诗意，大师级构图，, 画面正下方有一字排列开的极细无衬线字体“By Moule”</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-01-07 23:12</td>
+      <td class="author-cell">乐儿</td>
+      <td><span class="fav-num fav-normal">❤ 415</span></td>
+      <td class="usage-cell">93</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7592637796582559014" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#84</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7597692436130843942" target="_blank"><img src="images/084_7597692436130843942.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">帮忙设计一款具有国风特色的瑞幸咖啡杯、一次性纸杯、带盖子的，杯身采用岩彩颜料绘制中国传统图案，如牡丹、云纹等，色彩有宫廷中国红、金且丰富自然，展现出岩彩的质感和层次，杯子上写着“luckin coffee”
+并附上该设计的平面展开印刷图</div></td>
+      <td><span class="model-badge">即梦4.0</span></td>
+      <td class="date-cell">2026-01-21 14:07</td>
+      <td class="author-cell">#达达#</td>
+      <td><span class="fav-num fav-normal">❤ 411</span></td>
+      <td class="usage-cell">18</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7597692436130843942" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#85</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7599814753879330057" target="_blank"><img src="images/085_7599814753879330057.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">文艺手写字体“小定位大事业”艺术字体设计，手写英文小字“DESIGN BY BEIYU”要求毛笔手写风格，极强的艺术写作风格。视觉震撼，笔画增加水墨笔刷效果，笔画巧妙延长设计变形，黑底白字。</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-01-27 07:23</td>
+      <td class="author-cell">一拓</td>
+      <td><span class="fav-num fav-normal">❤ 410</span></td>
+      <td class="usage-cell">280</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7599814753879330057" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#86</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610744489208024370" target="_blank"><img src="images/086_7610744489208024370.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">画面风格：3D写实风格，UE5渲染，细节超高清。根据以下角色描述，生成一张纯白背景的角色三视图设定表，清晰展示角色的正面、侧面、背面标准正交视图。要求服装、发型、配饰等所有细节在三个视角中完全一致。角色描述如下:【角色描述】 男性，33岁，身高178cm，瘦高挺拔。黑色短发，侧分，发型整洁。长脸，佩戴金丝边眼镜，眼神专注。身穿浅灰色修身休闲西装外套，内搭白色圆领T恤，下穿深蓝色九分休闲裤。左手佩戴黑色表带的智能手表。脚穿白色板鞋。姿态斯文挺拔。
+【画面要求】 纯白背景，无阴影。依次并排展示：正面全身站立像、90度侧面全身像、背面全身像。服装剪裁合身，体现都市简约风格。</div></td>
+      <td><span class="model-badge">high_aes_general_v50</span></td>
+      <td class="date-cell">2026-02-25 18:15</td>
+      <td class="author-cell">用户6193822559715</td>
+      <td><span class="fav-num fav-normal">❤ 410</span></td>
+      <td class="usage-cell">339</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610744489208024370" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#87</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7612467469604703539" target="_blank"><img src="images/087_7612467469604703539.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">钢笔画，用绿色和橙色线条（点线技法） 构想说明： 极度精细地描绘两颗柿子。完全通过无数细密短促的钢笔线条的排列与交叉，用绿色线条（点线技法）来塑造枝叶，用橙色线条（点线技法）来塑造柿子的形体、质感。线条的走向紧紧遵循柿子的形态，展现出蓬勃的生命力。只生成1张图片。</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-03-02 09:41</td>
+      <td class="author-cell">用户1694566150327</td>
+      <td><span class="fav-num fav-normal">❤ 410</span></td>
+      <td class="usage-cell">28</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7612467469604703539" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#88</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611485472593890610" target="_blank"><img src="images/088_7611485472593890610.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-27 18:11</td>
+      <td class="author-cell">抠抠</td>
+      <td><span class="fav-num fav-normal">❤ 405</span></td>
+      <td class="usage-cell">573</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611485472593890610" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#89</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7612591107347713306" target="_blank"><img src="images/089_7612591107347713306.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">动漫风格角色立绘，一个威武的古装将军，标准三视图布局。顶部是全身正面、侧面、背面视图，角色身穿华丽的金色与红色相间的汉服铠甲，手持长剑，气质威严。底部是脸部、手部、脚部的特写，展示其坚毅的眼神、戴着金属护腕的手和战靴的细节。背景为纯白色，线条流畅，色彩鲜明，4K高清画质。</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-03-02 17:41</td>
+      <td class="author-cell">萧寒枫</td>
+      <td><span class="fav-num fav-normal">❤ 404</span></td>
+      <td class="usage-cell">314</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7612591107347713306" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#90</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611535987444944138" target="_blank"><img src="images/090_7611535987444944138.jpg" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">红尘一路痴心荒凉</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-27 21:27</td>
+      <td class="author-cell">星空女神【原创作品】</td>
+      <td><span class="fav-num fav-normal">❤ 401</span></td>
+      <td class="usage-cell">4,752</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611535987444944138" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#91</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7612386401232964910" target="_blank"><img src="images/091_7612386401232964910.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">给乐曲配个循环用的MV偷偷懒</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-03-02 04:28</td>
+      <td class="author-cell">小吃货Lio</td>
+      <td><span class="fav-num fav-normal">❤ 400</span></td>
+      <td class="usage-cell">1,332</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7612386401232964910" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#92</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7612599533767265587" target="_blank"><img src="images/092_7612599533767265587.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-03-02 18:14</td>
+      <td class="author-cell">有点甜</td>
+      <td><span class="fav-num fav-normal">❤ 399</span></td>
+      <td class="usage-cell">1,064</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7612599533767265587" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#93</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7613415353435032842" target="_blank"><img src="images/093_7613415353435032842.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">类型：连续性长图文设计 主题：简约高级图文组合三联竖版长卷，内容具有关联性，不要内容重复 风格：简约，高级，留白，草原风景广袤 元素：绘本插画，高定插画，绿色调，高级感，文艺插画，水彩风格，高原，雪山，绿色，森林，大色块，颗粒感，增加肌理，抽象插画，扁平插画，鸟瞰视角。大师作品，梦境系列，意识流，几米叙事风格，明亮配色。穿插中英文字排版大师级排版细节：文字信息错落分布，文艺字体排版，融合中英文，文学文案，高分辨率8K，细节丰富，氛围感强烈 参数：构图紧凑，笔触细腻，画面层次丰富</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-03-04 23:00</td>
+      <td class="author-cell">小题</td>
+      <td><span class="fav-num fav-normal">❤ 398</span></td>
+      <td class="usage-cell">26</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7613415353435032842" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#94</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611482739879005450" target="_blank"><img src="images/094_7611482739879005450.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">[浅灰蓝磨砂玻璃背景]，交叠的手部轮廓与开口处倾泻的阳光形成框景，框内摇曳的五彩花朵在光流中舒展，磨砂玻璃的颗粒感模糊了手部边缘，花朵的柔滑花瓣却在光影中显露出细腻纹路，营造冷峻疏离与梦幻超现实交织的整体氛围，斑驳光影在玻璃与花瓣间折射出既清晰又朦胧的恍惚感受，左下方极细无衬线不明显文字“WanbaN.”，左下方极细无衬线不明显文字“by you, immerse in”</div></td>
+      <td><span class="model-badge">high_aes_general_v50</span></td>
+      <td class="date-cell">2026-02-27 18:00</td>
+      <td class="author-cell">哦</td>
+      <td><span class="fav-num fav-normal">❤ 389</span></td>
+      <td class="usage-cell">221</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611482739879005450" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#95</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611709122664287534" target="_blank"><img src="images/095_7611709122664287534.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-28 08:39</td>
+      <td class="author-cell">nimouto</td>
+      <td><span class="fav-num fav-normal">❤ 384</span></td>
+      <td class="usage-cell">169</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7611709122664287534" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#96</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7608406498414267675" target="_blank"><img src="images/096_7608406498414267675.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">—</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-02-19 11:03</td>
+      <td class="author-cell">用户7687534514941</td>
+      <td><span class="fav-num fav-normal">❤ 384</span></td>
+      <td class="usage-cell">662</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7608406498414267675" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#97</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7597305162146925850" target="_blank"><img src="images/097_7597305162146925850.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">粉色氛围感艺术海报，极简主义、抽象表达、现代设计、高级感、柔和渐变。画面采用不同色阶的粉色为主，粉色的朦胧质感，隐约有花瓣造型，背景是淡粉色。动感模糊，颜色饱满，朦胧美学。小英文VISION。</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-01-20 13:04</td>
+      <td class="author-cell">VISION</td>
+      <td><span class="fav-num fav-normal">❤ 384</span></td>
+      <td class="usage-cell">149</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7597305162146925850" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#98</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7601359732485393691" target="_blank"><img src="images/098_7601359732485393691.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">个性字体设计</div></td>
+      <td><span class="model-badge">未知</span></td>
+      <td class="date-cell">2026-01-31 11:18</td>
+      <td class="author-cell">缘梦大侠</td>
+      <td><span class="fav-num fav-normal">❤ 383</span></td>
+      <td class="usage-cell">105</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7601359732485393691" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#99</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7609305708038737179" target="_blank"><img src="images/099_7609305708038737179.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">帮我生成图片：运用印象派的艺术风格，借助广角镜头捕捉原始森林的景致，对称构图让画面显得规整而和谐。抬头仰望那片茂密的森林，不同树种的枝头点缀着五彩斑斓的花朵，有的大如碗盘，有的小巧玲珑，在柔和的光影映衬下，花朵的颜色显得更加绚丽，仿佛一幅流动的色彩画卷。比例 3:4。</div></td>
+      <td><span class="model-badge">即梦4.0 L</span></td>
+      <td class="date-cell">2026-02-21 21:12</td>
+      <td class="author-cell">_牧羊人</td>
+      <td><span class="fav-num fav-normal">❤ 381</span></td>
+      <td class="usage-cell">252</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7609305708038737179" target="_blank" class="work-link">查看</a></td>
+    </tr>
+
+    <tr>
+      <td class="rank">#100</td>
+      <td class="img-cell"><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610378524150566190" target="_blank"><img src="images/100_7610378524150566190.webp" alt="作品图" loading="lazy"></a></td>
+      <td class="prompt-cell"><div class="prompt-text">以Moebius（让·吉罗）风格绘制一幅暗黑哥特风黑金，展现极繁主义，画面中充满极致的细节，每一处的构造、装饰都精致入微，整体氛围神秘而奇幻</div></td>
+      <td><span class="model-badge">即梦3.0（18B）</span></td>
+      <td class="date-cell">2026-02-24 18:35</td>
+      <td class="author-cell">小楼一夜</td>
+      <td><span class="fav-num fav-normal">❤ 378</span></td>
+      <td class="usage-cell">100</td>
+      <td><a href="https://jimeng.jianying.com/ai-tool/work-detail/7610378524150566190" target="_blank" class="work-link">查看</a></td>
+    </tr></tbody>
+</table>
+</div>
+<div class="footer">
+  数据来源：即梦 AI（jimeng.jianying.com）发现页 · 筛选条件：2026 年发布 · 收藏量 ≥ 100<br>
+  累计采集 743 条，本报告展示按收藏量降序前 100 条 · 更新时间：2026-03-17 09:04
+</div>
+</body>
+</html>
